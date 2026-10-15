@@ -20,11 +20,14 @@ def main():
     print("8. Assess weather risk for upcoming calls")
     print("9. Search incident reports")
     print("10. Close console")
-    print("Select service:")
+
+    
 
     while menuchoice != "10":
+        menuchoice = input("Select service: ")
+
         if menuchoice == "1":
-            "Task 1: List registered vessels"
+            listed_registered_vessels()
 
         elif menuchoice == "2":
             "Task 2: Inspect a vessel manifest"
@@ -50,11 +53,21 @@ def main():
         elif menuchoice == "9":
             "Task 9: Search incident reports"
 
+        elif menuchoice == "10":
+            print("Closing console. Goodbye!")
+
         else:
             print("Invalid menu choice. Please try again.")
 
 
     pass
+
+#task 1
+def listed_registered_vessels():
+    vessels = data_access.load_all_in_folder("dataset/vessels")
+    for vessel in vessels:
+        print(f"- {vessel["name"]} | IMO {vessel["imo"]} | {vessel["capacity_teu"]} TEU")
+    print(f"Skipped vessel files: {data_access.damaged_files("dataset/vessels")}")
 
 #task 3
 def classified_cargo():
