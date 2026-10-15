@@ -25,9 +25,20 @@ def load_json_file(file_path):
 
 def load_csv_file(file_path):
     #reading csv file and return 
-    with open(file_path, 'r', encoding='utf-8') as file:
-        reader = csv.DictReader(file)
-        return list(reader)
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            reader = csv.DictReader(file)
+            return list(reader)
+    except FileNotFoundError:
+        #print(f"File not found: {file_path}")
+        return 1
+    except csv.Error:
+        #print(f"Invalid CSV in file: {file_path}")
+        return 1
+    except ValueError:
+        #print(f"Error reading file {file_path}")
+        return 1
+
 
 def load_all_in_folder(folderpath):
     """Load all JSON and CSV files in a folder."""
@@ -42,9 +53,9 @@ def load_all_in_folder(folderpath):
         elif file_path.suffix == '.csv':
             if load_csv_file(file_path) != 1:
                 print(load_csv_file(file_path))
+                templist.append(load_csv_file(file_path))
 
     return templist
-    return print(f"Skipped vessel files: {failed_reads}")
 
 def damaged_files(folderpath):
     """Load all JSON and CSV files in a folder."""
