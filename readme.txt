@@ -32,6 +32,10 @@ How paths are resolved:
 How malformed or missing input is handled:
 How generated files are updated safely:
 
-Known limitations
+KNOWN LIMITATIONS
 -----------------
-Write "None known" or describe each known limitation.
+
+TEST EVIDENCE
+------------
+See test-ledger.csv
+
