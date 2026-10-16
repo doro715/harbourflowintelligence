@@ -8,7 +8,7 @@ from datetime import datetime
 
 #task 3 identify priority cargo
 def classify_cargo(shipment):
-    if shipment.get("hazardous", True) == True:
+    if shipment.get("hazardous", False) == True:
         return "CONTROLLED", "hazardous cargo"
     if shipment.get("temperature_controlled", False) == True:
         return "COLD CHAIN", "temperature controlled"
@@ -20,7 +20,6 @@ def classify_cargo(shipment):
 
 def priority_cargo():
     call_id = input("Call ID: ").strip().upper()
-
     port_calls = data_access.load_port_calls()
     call_exists = False
     for row in port_calls:
@@ -32,12 +31,10 @@ def priority_cargo():
         print("Port call not found.")
         return                    
 
-    
     manifest = data_access.find_manifest_by_call_id(call_id)
     if manifest is None:
         print("Manifest unavailable.")
-        return                   
-
+        return                
     
     shipments = data_access.load_all_shipments()
     counts = {
@@ -60,17 +57,18 @@ def priority_cargo():
           f"EXPEDITE={counts['EXPEDITE']}, "
           f"STANDARD={counts['STANDARD']}")
 
-
+#task 4 export customer operation file
 def export_customer_profile():
     customer_name = input("Customer name: ").strip()
-    target = customer_name.lower()
+    target = customer_name.lower()              
 
-    # 1. Scan all shipments
     shipments = data_access.load_all_shipments()
-    matches = [s for s in shipments
-               if str(s.get("customer", "")).strip().lower() == target]
-
-    if not matches:
+    matches = []
+    for s in shipments:
+        ship_customer = str(s.get("customer", "")).strip().lower()   
+        if ship_customer == target:                                   
+            matches.append(s)
+    if not matches:                             
         print("Customer not found.")
         return
 
@@ -107,21 +105,21 @@ def export_customer_profile():
     data_access.write_customer_profiles(rows)
     print("Customer profile updated: exports/customer-profiles.csv")
 
-
 # ========== Task 8 ==========
 def weather_risk():
+    # collect calls 
+    port_calls = data_access.load_port_calls()
+    weather_rows = data_access.load_weather()
+
     # display vessels
-    vessels, _ = data_access.load_vessels()
-    vessels.sort(key=lambda v: v["name"].lower())
-    for v in vessels:
-        print(f"- {v['name']}")
+    vessels= data_access.load_vessels()
 
     vessel_name = input("Vessel name: ").strip()
     vessel = data_access.find_vessel_by_name(vessel_name, vessels)
     if vessel is None:
         print("Vessel not found.")
         return
-
+    
     ref_date = None
     while ref_date is None:
         date_str = input("Reference date (YYYY-MM-DD): ").strip()
@@ -129,10 +127,6 @@ def weather_risk():
             ref_date = datetime.strptime(date_str, "%Y-%m-%d").date()
         except ValueError:
             print("Error - Date must use YYYY-MM-DD.")
-
-    # collect calls 
-    port_calls = data_access.load_port_calls()
-    weather_rows = data_access.load_weather()
 
     # weather lookup：{(port_code, date_str): row}
     weather_lookup = {}
@@ -163,28 +157,6 @@ def weather_risk():
         print("No upcoming port calls found.")
         return
 
-    candidates.sort(key=lambda c: (c["arrival"], c["call_id"]))
-
-    for c in candidates:
-        pretty = c["arrival"].strftime("%d %B %Y")
-        print(f"{vessel['name']} | {c['port_code']} | {pretty}")
-
-        key = (c["port_code"], c["date_str"])
-        forecast = weather_lookup.get(key)
-        if forecast is None:
-            print("Forecast unavailable")
-            continue
-
-        try:
-            wind = float(forecast["wind_kmh"])
-            precip = float(forecast["precipitation_mm"])
-            wave = float(forecast["wave_height_m"])
-        except (ValueError, KeyError):
-            print("Forecast unavailable")
-            continue
-
-        print(f"Wind: {wind:.1f} km/h | Rain: {precip:.1f} mm | Waves: {wave:.1f} m")
-
         recs = []
         if wind >= 45:
             recs.append("Suspend crane operations.")
@@ -194,4 +166,3 @@ def weather_risk():
             recs.append("Prepare covered handling.")
         if not recs:
             recs.append("Normal operating plan.")
-
