@@ -1,11 +1,6 @@
 """HarborFlow Assignment 2 starter entry point."""
-<<<<<<< HEAD
-import data_access  
-=======
 import datetime
-
 import data_access
->>>>>>> bd25c79f9777eccce05295b1299317a40a77ee1a
 import operations
 import text_tools
 import json
@@ -25,16 +20,9 @@ def main():
     print("8. Assess weather risk for upcoming calls")
     print("9. Search incident reports")
     print("10. Close console")
-<<<<<<< HEAD
+
 
     while menuchoice != "10":
-
-=======
-
-    
-
-    while menuchoice != "10":
->>>>>>> bd25c79f9777eccce05295b1299317a40a77ee1a
         menuchoice = input("Select service: ")
 
         if menuchoice == "1":
@@ -78,10 +66,6 @@ def main():
 
         else:
             print("Invalid menu choice. Please try again.")
-<<<<<<< HEAD
-            pass
-        
-=======
 
 
     pass
@@ -140,6 +124,5 @@ def valid_date(date_string):
         return False
 
 
->>>>>>> bd25c79f9777eccce05295b1299317a40a77ee1a
 if __name__ == "__main__":
     main()

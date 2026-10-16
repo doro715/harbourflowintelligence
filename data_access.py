@@ -7,7 +7,6 @@ from pathlib import Path
 import csv
 import datetime
 
-<<<<<<< HEAD
 PROJECT_ROOT = Path(__file__).resolve().parent
 DATASET_DIR = PROJECT_ROOT / "dataset"
 VESSELS_DIR = DATASET_DIR / "vessels"
@@ -141,7 +140,6 @@ def read_customer_profiles():
     if not CUSTOMER_PROFILES_FILE.exists():
         return []
     return load_csv_file(CUSTOMER_PROFILES_FILE)
-=======
 def load_json_file(file_path):
     #reading json file and return 
     try:
@@ -207,4 +205,3 @@ def damaged_files(folderpath):
                 failed_reads += 1
     return failed_reads
     
->>>>>>> bd25c79f9777eccce05295b1299317a40a77ee1a
