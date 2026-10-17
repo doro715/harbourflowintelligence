@@ -21,22 +21,9 @@ EXPORTS_DIR = PROJECT_ROOT / "exports"
 SANITIZED_DIR = EXPORTS_DIR / "sanitized"
 CUSTOMER_PROFILES_FILE = EXPORTS_DIR / "customer-profiles.csv"
 
-# ----------read json and csv files---------
-def load_json_file(path):
-    with open(path, 'r', encoding='utf-8') as file:
-        return json.load(file)
-    
-def load_csv_file(path):
-    rows = []
-    with open(path, "r", encoding='utf-8') as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            rows.append(row)
-    return rows
-
-#-----------load data in different files
+#-----------load data in different data files
 def load_all_manifests():
-    """read manifests/ all json。retun list[dict]。"""
+    """read manifests/ all json。return list[dict]。"""
     manifests = []
     for path in sorted(MANIFESTS_DIR.glob("*.json")):
         try:
@@ -75,11 +62,26 @@ def load_vessels():
         try:
             with open(json_file, "r") as file:
                 vessels_list[json_file.stem] = json.load(file)
-
         except json.JSONDecodeError:
             print("Invalid JSON:", json_file.name)
 
     return vessels_list
+
+def find_vessel_by_name(name,vessels=None):
+    if vessels is None:
+        vessels = load_vessels()
+    target = name.strip().lower()
+
+    if isinstance(vessels, dict):
+        search_space = vessels.values()
+    else:
+        search_space = vessels
+
+    for v in search_space:
+        if v["name"].strip().lower() == target:
+            return v
+    else:
+        return None
 
 def find_shipment_by_id(shipment_id, shipments=None):
     if shipments is None:
@@ -116,14 +118,8 @@ def call_id_exists_in_port_calls(call_id, port_calls=None):
 def load_weather():
     return load_csv_file(WEATHER_FILE)
 
-
 def ensure_exports_dir():
     EXPORTS_DIR.mkdir(parents=True, exist_ok=True)
-
-
-def ensure_sanitized_dir():
-    SANITIZED_DIR.mkdir(parents=True, exist_ok=True)
-
 
 def write_customer_profiles(rows):
     """rows: list[dict]:customer, shipment_count, total_weight_kg, express_count, destinations"""
@@ -140,6 +136,7 @@ def read_customer_profiles():
     if not CUSTOMER_PROFILES_FILE.exists():
         return []
     return load_csv_file(CUSTOMER_PROFILES_FILE)
+
 def load_json_file(file_path):
     #reading json file and return 
     try:
@@ -164,7 +161,7 @@ def load_csv_file(file_path):
             reader = csv.DictReader(file)
             return list(reader)
     except FileNotFoundError:
-        #print(f"File not found: {file_path}")
+        # print(f"File not found: {file_path}")
         return 1
     except csv.Error:
         #print(f"Invalid CSV in file: {file_path}")
@@ -172,7 +169,6 @@ def load_csv_file(file_path):
     except ValueError:
         #print(f"Error reading file {file_path}")
         return 1
-
 
 def load_all_in_folder(folderpath):
     """Load all JSON and CSV files in a folder."""
@@ -192,7 +188,6 @@ def load_all_in_folder(folderpath):
     return templist
 
 def damaged_files(folderpath):
-    """Load all JSON and CSV files in a folder."""
     failed_reads = int()
     folder = Path(folderpath)
     for file_path in folder.glob('*'):

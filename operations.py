@@ -113,13 +113,14 @@ def weather_risk():
 
     # display vessels
     vessels= data_access.load_vessels()
-
     vessel_name = input("Vessel name: ").strip()
     vessel = data_access.find_vessel_by_name(vessel_name, vessels)
+
     if vessel is None:
         print("Vessel not found.")
         return
     
+    # display date
     ref_date = None
     while ref_date is None:
         date_str = input("Reference date (YYYY-MM-DD): ").strip()
@@ -128,13 +129,14 @@ def weather_risk():
         except ValueError:
             print("Error - Date must use YYYY-MM-DD.")
 
-    # weather lookup：{(port_code, date_str): row}
+    # weather lookup dictionary：{(port_code, date_str): row}
     weather_lookup = {}
     for row in weather_rows:
         key = (str(row.get("port_code", "")).strip(),
                str(row.get("date", "")).strip())
         weather_lookup[key] = row
 
+    #upcoming calls
     candidates = []
     for row in port_calls:
         if row.get("vessel_id") != vessel["vessel_id"]:
@@ -156,7 +158,30 @@ def weather_risk():
     if not candidates:
         print("No upcoming port calls found.")
         return
+    
+    candidates.sort(key=lambda c: (c["arrival"], c["call_id"]))
+    #map all calls and print weather suggestions
+    #expected first row result Nordic Relay | GOT | 18 October 2026
+    for c in candidates:
+        output_date = c["arrival"].strftime("%d %B %Y")
+        print(f"\n{vessel['name']} | {c['port_code']} | {output_date}")
+    #missing weather forcast print by using weather lookup dictionary
+        key = (c["port_code"],c["date_str"])
+        forcast = weather_lookup.get(key)
+        if forcast is None:
+            print("Forcast is not available")
+            continue
+        #Convert numeric CSV fields inside a focused try block and report malformed forecast rows
+        try:
+            wind = float(forcast["wind_kmh"])
+            precip = float(forcast["precipitation_mm"])
+            wave = float(forcast["wave_height_m"])
+        except(ValueError, KeyError):
+            print("Forecast unavailable")
+            continue
 
+        print(f"Wind: {wind:.1f} km/h | Rain: {precip:.1f} mm | Waves: {wave:.1f} m")
+        #required conditions 
         recs = []
         if wind >= 45:
             recs.append("Suspend crane operations.")
@@ -166,3 +191,6 @@ def weather_risk():
             recs.append("Prepare covered handling.")
         if not recs:
             recs.append("Normal operating plan.")
+
+        print("Recommendation: " + " ".join(recs))
+    

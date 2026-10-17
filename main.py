@@ -77,10 +77,6 @@ def listed_registered_vessels():
         print(f"- {vessel["name"]} | IMO {vessel["imo"]} | {vessel["capacity_teu"]} TEU")
     print(f"Skipped vessel files: {data_access.damaged_files("dataset/vessels")}")
 
-#task 3
-def classified_cargo():
-    """Identify priority cargo."""
-
 #task 5
 def port_calls_by_month(month):
     port_calls = data_access.load_csv_file("dataset/port_calls.csv")
